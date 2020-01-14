@@ -1,0 +1,11 @@
+# ignore git service file 
+.DS_Store
+.idea/
+output_directory/
+LICENCE
+README*
+*.mod
+# ignore executables
+Fe4
+makefile_Fe4
+gnuplot*
