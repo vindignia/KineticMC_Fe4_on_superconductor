@@ -1,0 +1,6 @@
+- compute and display the actual sweeping rate
+- remove comments
+- remove *Ale
+- remove field dipolar variables
+- create a makefile
+- write readme
