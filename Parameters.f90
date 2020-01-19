@@ -11,15 +11,15 @@ module ComputationParameters
     REAL (Kind=8)                   :: C = 0.d0
     REAL (Kind=8)                   :: B43 = 5.d-3
     REAL (Kind=8)                   :: B66 = 3.d-6
-    ! ----------------- Transition-rate parameters
-    REAL (Kind=8)                   :: gamma_0 = 4.7987d3  ! 1.1563d3  OLD
+    ! ----------------- Transition-rate parameters -----------
+    REAL (Kind=8)                   :: gamma_0 = 4.7987d3       ! 1.1563d3  OLD
     REAL (Kind=8)                   :: gamma_tunnel = 0.5d0
     REAL (Kind=8)                   :: g1 = 4.d-2
     REAL (Kind=8)                   :: g2 = 4.d-2
-    ! ----------------- system parameters
+    ! ----------------- System parameters --------------------
     INTEGER (Kind=4),parameter      :: number_of_spins = 10		! spin can potentially have a different tilting
     INTEGER (Kind=4),parameter      :: matrix_size = 11		    ! 2*S+1 we define this instead of the spin S
-    REAL (Kind=8) :: S
+    REAL (Kind=8)                   :: S
     ! --------------------------------------------------------
     INTEGER (Kind=4),parameter      :: iter_max =200
     INTEGER (Kind=4) 	            :: iwrite=20
@@ -41,7 +41,7 @@ module ComputationParameters
 
 contains
 
-    ! --------------------------------------
+    ! -------------------------------------------------------- 
 
     subroutine show_consts()
         print*, "Pi = ", pi
