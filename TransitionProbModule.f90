@@ -3,7 +3,7 @@ Module TransitionProbabilities
 
 Contains
 
-    SUBROUTINE transition_rates_Ale(Nd, TIN, H_x, H_y, H_z, W_Ale, eig, S_proj_out)
+    SUBROUTINE transition_rates(Nd, TIN, H_x, H_y, H_z, W_Ale, eig, S_proj_out)
         implicit none
 
         INTEGER (Kind = 4) :: Nd, I, p, q, mm, jm(Nd)
@@ -16,7 +16,7 @@ Contains
         REAL (Kind = 8) :: T, TIN, H_x, H_y, H_z
         REAL (Kind = 8) :: Energy_Ale(Nd), W_Ale(Nd, Nd)
         REAL (Kind = 8) :: S_plus_coeff, S_minus_coeff
-        REAL (Kind = 8) :: En_levels(Nd)!,S_proj(3,Nd) ! COMMON/levels
+        REAL (Kind = 8) :: En_levels(Nd)
         COMPLEX (Kind = 8) :: component_plus, component_minus, test_norm
         REAL (Kind = 8) :: S_z_proj(Nd)
         COMPLEX (Kind = 8) :: S_x_proj(Nd), S_y_proj(Nd)
@@ -66,9 +66,9 @@ Contains
 
     !---------------------------------------------------------
 
-    pure function transition_rate(T, gamma_tunnel, gg0, gg1, gg2, Nd, eigenVal, eigenVect, p, q) ! <p| ... |q>
+    pure function transition_rate(T, gamma_tunnel, gamma_0, gg1, gg2, Nd, eigenVal, eigenVect, p, q) ! <p| ... |q>
         implicit none
-        REAL (Kind = 8), intent(in) :: T, gamma_tunnel, gg0, gg1, gg2
+        REAL (Kind = 8), intent(in) :: T, gamma_tunnel, gamma_0, gg1, gg2
         INTEGER (Kind = 4), intent(in) :: Nd, p, q
         COMPLEX (Kind = 8), intent(in) :: eigenVect(Nd, Nd)
         REAL (Kind = 8), intent(in) :: eigenVal(Nd)
@@ -80,9 +80,6 @@ Contains
         REAL (Kind = 8) :: S, Ms
         COMPLEX (Kind = 8) :: sum, arg
         REAL (Kind = 8) :: coeff
-        REAL (Kind = 8) :: FWHM, lorentzian_tunnel
-
-        FWHM = (2.d-2)*10.*0.927400968/1.38064852   ! DeltaB*S*g*mu_B 20 mT Cornia Luis PRB
 
         S_plus_sq_sq = modSquare(S_plus_sq(Nd, eigenVect, p, q))
         S_minus_sq_sq = modSquare(S_minus_sq(Nd, eigenVect, p, q))
@@ -90,7 +87,7 @@ Contains
         S_minus_S_z_sq = S_minus_S_z(Nd, eigenVect, p, q)**2.
 
         spin_phonon = gg2*gg2*(S_plus_sq_sq + S_minus_sq_sq) + gg1*gg1*(S_plus_S_z_sq + S_minus_S_z_sq)
-        spin_phonon = gg0 * spin_phonon
+        spin_phonon = gamma_0 * spin_phonon
 
         deltaE = eigenVal(p) - eigenVal(q)
         thermal_weight = (deltaE**3.) / (dexp(deltaE / T) - 1.d0)
@@ -115,13 +112,6 @@ Contains
             transition_rate = spin_phonon * thermal_weight
 
         endif
-
-        ! new 17.11.2019 Lorentzian for PURE TUNNELING CHANNEL
-!        if (abs(p - q).ge.9)then
-!            lorentzian_tunnel = FWHM/(FWHM*FWHM + deltaE*deltaE)
-!            lorentzian_tunnel = lorentzian_tunnel*gamma_tunnel*1.d-1*FWHM/3.14  ! normalized to have roughly the same area as before.
-!            transition_rate = transition_rate + lorentzian_tunnel
-!        end if
 
     end function transition_rate
 
@@ -182,7 +172,7 @@ Contains
 
     !-----------------------------
 
-    SUBROUTINE ZEEMAle(Nd, H_x, H_y, H_z, DAT)
+    SUBROUTINE ZEEM(Nd, H_x, H_y, H_z, DAT)
         implicit none
         COMPLEX (Kind = 8) :: DAT(Nd, Nd)
         REAL (Kind = 8), allocatable :: Z(:)
@@ -221,7 +211,7 @@ Contains
             enddo
         enddo
         RETURN
-    END subroutine ZEEMAle
+    END subroutine ZEEM
     !---------------------------------------------------------
 
     subroutine Hamiltonian(Nd, H_x, H_y, H_z, Ham)
@@ -281,7 +271,7 @@ Contains
 
         deallocate(Z)
 
-        call ZEEMAle(Nd, H_x, H_y, H_z, ZEE)
+        call ZEEM(Nd, H_x, H_y, H_z, ZEE)
         do I = 1, Nd
             do J = I, Nd
                 Ham(I, J) = (0.d0, 0.d0)

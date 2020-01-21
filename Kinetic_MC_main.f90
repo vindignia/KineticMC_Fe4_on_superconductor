@@ -1,13 +1,12 @@
-! ordering of include is important aslo within
-include 'SpinAlgebra.f90'
+! © 2020 ETH Zurich, [PD Dr. Alessandro Vindigni]
+include 'SpinAlgebraModule.f90'
 include 'TransitionProbModule.f90'
 include 'FileNamesModule.f90'
 include 'TestModule.f90'
 include 'RandomModule.f90'
-include 'Parameters.f90'
-include 'VariablesMain.f90'
+include 'ParametersModule.f90'
+include 'VariablesMainModule.f90'
 
-! I am changing al the types into REAL (Kind=8) consistently in every subrouitne and commons
 program Kinetic_MC_Fe4
 
     USE SpinAlgebra
@@ -21,20 +20,21 @@ program Kinetic_MC_Fe4
     S = spinModulus(matrix_size)
 
     call cpu_time(start)
-    write(*,*)'kinetic MonteCarlo'
+
+    print '(/"kinetic MonteCarlo Fe4 on superconductor"/)'
 
     ! RND number generator
     idum=seed
     mmm = mzranset(521288629,362436069,16163801,idum)
 
-    write(*,*)
-    write(*,*)'# field values'
     t_inc=time_max/dble(N_time_slot)
-
     h_step=dabs(h_f-h_i)/dble(N_time_slot)		! with h=0 in the range
 
-    write(*,*)'# t_inc=',t_inc,'# h_step=',h_step
-    write(*,*)'# v sweep=',h_step/t_inc
+    if(.NOT.read_fields) then
+        print '("t_inc = " (e12.4) x "[s]")', t_inc
+        print '("h_step = " (F8.4) x "[T]")', (1d-4)*h_step
+        print '("v_sweep = " (e12.4) x "[T/s]")', (1d-4)*h_step/t_inc
+    endif
 
     i=1
 
@@ -74,10 +74,9 @@ program Kinetic_MC_Fe4
         ih = (tmp_h-h_i)/h_step
         ih = ih + 1
 
-        write(*,*)'# time max', time_max
-        write(*,*)
+        print '(" time max = " (F12.4) x "[s]"/)', time_max
 
-        ! write the eigenvalues in a separate files
+        ! write the eigenvalues and transition rates in a separate files
         if (save_eig_and_W) then
             open(unit=1, file=filename_eigenvalues)
             open(unit=2, file=filename_transition_rates)
@@ -87,7 +86,6 @@ program Kinetic_MC_Fe4
             close(2)
         end if
 
-!                stop
 
         !==================  MAIN BLOCK ====================================
 
@@ -99,9 +97,7 @@ program Kinetic_MC_Fe4
         do iter=1,iter_max
 
             ! --- define transition rates differently for phi_rnd or not
-
             do itime=1,N_time_slot
-
                 if(random_phi) then
                     rnd_phi = random()
                     phi = pi*rnd_phi
@@ -113,9 +109,8 @@ program Kinetic_MC_Fe4
                 H_y = dsin(theta)*dsin(phi)*field_values(itime)
                 H_z = dcos(theta)*field_values(itime)	! ACHTUNG field_values(itime)
 
-                ! transition probabilities Gatteschi-Sessoli-Villain
-                call transition_rates_Ale(matrix_size,T,H_x,H_y,H_z,W_single,En_levels,S_proj)
-                !                call transition_rates_H(matrix_size,T,H_x,H_y,H_z,W_single,En_levels,S_proj)
+                ! transition probabilities taken from the book "Molecular Nanomagnets" Gatteschi-Sessoli-Villain
+                call transition_rates(matrix_size,T,H_x,H_y,H_z,W_single,En_levels,S_proj)
 
                 do q=1,matrix_size
                     do p=1,matrix_size
@@ -177,8 +172,6 @@ contains
     !---------------------------------------------------------------------
 
     subroutine mag_equilibrium_z
-        ! compute the equilibrium mangnetization self consistently as in dipolar etc....
-        ! implicit none
         REAL (Kind=8)		:: Proj_eq,zeta_sum
         REAL (Kind=8)       :: P_eq(matrix_size)
 
@@ -202,25 +195,19 @@ contains
     !---------------------------------------------------------------------
 
     Subroutine Advance_time_squares(ii,t_i,q_final,Delta_t_min)
-        ! in this program we do not gain anything by putting the logical control on th admitted transitions
 
         INTEGER (Kind=4)	:: q_final,ii,q_max
         REAL (Kind=8)		:: tmp_int
         REAL (Kind=8)		:: delta_tt,control,rr,h_mod,tmp_min,control_min
         REAL (Kind=8)		:: int_tt(matrix_size),log_rr(matrix_size),t_step(matrix_size)
         REAL (Kind=8)		:: t_i,tt,Delta_t_min,W_max
-        !logical 			:: exit_while_loop
-        ! for now works only without dipolar
 
         ! Implementation of the First-Reaction-Algorithm with discretized, "squarelike" transition rates.
-        ! write(*,*)'in routine Advance time squares'
 
         p = conf(ii)
         W_max = 0.d0
         do q=1,matrix_size
 
-            !R  rr = 0
-            !R  call RANDOM_NUMBER(rr)
             rr = random()
             log_rr(q)=-dlog(rr)
 
@@ -269,9 +256,6 @@ contains
 
         enddo ! q loop
 
-        ! initialization in case no transition has happened
-        !R  rr = 0
-        !R  call RANDOM_NUMBER(rr)
         rr = random()
 
         q_final = 1 + matrix_size*rr
@@ -299,7 +283,6 @@ contains
 
     subroutine MonteCarlo_sweep(PP,NN)
 
-        ! ideally this routine and advance time should only depend on W(p,q,ir,itime)
         REAL (Kind=8)   :: PP(number_of_spins*matrix_size,N_time_slot),NN(N_time_slot)
         REAL (Kind=8)	:: h_ext_x,h_ext_y,h_ext_z
 
@@ -311,7 +294,6 @@ contains
         h_ext_z = dcos(theta)*field_values(1)
 
         !--- initialization
-        ! I checked that if init_ferro, i.e. all spin in state q = 1, is a reasonable assumption with Boltzmann weight
         call Init_ferro
         !-----------------------------------
         i=1
@@ -343,8 +325,7 @@ contains
 
             enddo
 
-            !  exiting at this point does not seem to have an influence
-            if(iadvance==0)Delta_t = time_max + 1.	!no event has happened
+            if(iadvance==0)Delta_t = time_max + 1.	! no event has happened
 
             if(Delta_t<1.d-13)write(*,*)time,'achtung Delta_t=0!',Delta_t,'iadvance=',iadvance
             ! Advance time and define probability
@@ -354,16 +335,16 @@ contains
             time = time + Delta_t
 
             tmp_h = h_i + time*h_step/t_inc
-            itime=int(time/t_inc)  + 1   			! N.B. Delta_t is allowed to be larger than t_inc with this trick
+            itime=int(time/t_inc)  + 1   			                ! N.B. Delta_t is allowed to be larger than t_inc
 
             if(itime == itime_old) then
                 icount = icount + 1
-                NN(itime) = NN(itime) + Delta_t 			! it has to be outside the loop on the lattice
+                NN(itime) = NN(itime) + Delta_t 			        ! it has to be outside the loop on the lattice
 
                 do ir=1,number_of_spins
                     p = conf(ir)	! 1 + (sigma(ir) + 1)/2			! vector of the states in which the each spin is found
                     ip = (ir-1)*matrix_size + p 					! label site + level before flipping
-                    PP(ip,itime) = PP(ip,itime) + Delta_t		! probabilities are stored with global time
+                    PP(ip,itime) = PP(ip,itime) + Delta_t		    ! probabilities are stored with global time
                 enddo
 
             else
@@ -374,9 +355,9 @@ contains
 
                 dt_f = itime_old*t_inc - time_old			! the slice of delta t in the final time slot
 
-                NN(itime_old) = NN(itime_old) + dt_f	! it has to be outside the loop on the lattice
+                NN(itime_old) = NN(itime_old) + dt_f	    ! it has to be outside the loop on the lattice
 
-                it_max=itime						! used for updating intermediate time slots
+                it_max=itime						        ! used for updating intermediate time slots
                 if(itime > N_time_slot)then
                     it_max = N_time_slot
                 endif
@@ -413,7 +394,7 @@ contains
             !	END UPDATE CONFIGURATION
             !-------------------------------------------
 
-            if (itime > N_time_slot)exit	! do while =>  this happens also when Delta_t = 0, the following one not
+            if (itime > N_time_slot)exit	! do while => this happens also when Delta_t = 0, the following one not
 
         enddo   ! do while
 
@@ -428,7 +409,6 @@ contains
 
         !----------- output header ------------------
         if ( average_critical_field )then
-
             !   if ( icritical == 0)then
             !      write(1,*)
             !      write(1,*)
@@ -459,15 +439,6 @@ contains
                 field_nominal = field_true
             endif
 
-
-            !  if( read_fields ) then
-            !     read(2,*)ih, field_nominal, field_true
-            !     field_values(itime)=field_true
-            !  elseif ( average_critical_field )then
-            !  else
-            !     field_values(itime)=dble(itime-1)*h_step + h_i + h_step*0.5
-            !  endif
-
             Population(:,:)=0.d0
 
             do ir=1,number_of_spins
@@ -496,8 +467,7 @@ contains
                 H_y = h_ext_y
                 H_z = h_ext_z
 
-                call transition_rates_Ale(matrix_size,T,H_x,H_y,H_z,W_single,En_levels,S_proj)
-                !                        call transition_rates_H(matrix_size,T,H_x,H_y,H_z,W_single,En_levels,S_proj)
+                call transition_rates(matrix_size,T,H_x,H_y,H_z,W_single,En_levels,S_proj)
 
                 if(Norm(itime)>1.d-14)then
                     icount=icount+1
@@ -549,27 +519,35 @@ contains
         else
 
             !----------- output ending ------------------
-            write(1,*)'# Source code: Kinetic_MC_Fe4.f90'
-            write(1,*)'# computation parameters'
-            write(1,*)'#'
-            write(1,*)'# Spin Hamiltonian parameters'
-            write(1,*)'# D,E,B,B42,C,B43,B66'
-            write(1,*)'#',D,E,B,B42,C,B43,B66
-            write(1,*)'#'
-            write(1,*)'# number_of_spins=',number_of_spins
-            write(1,*)'# iter_max=',iter_max,' iter=',iter
-            write(1,*)'# iwrite=',iwrite
-            write(1,*)'# N_time_slot=',N_time_slot
-            write(1,*)'# time_max=',time_max
-            write(1,*)'# h_i=',h_i
-            write(1,*)'# h_f=',h_f
-            ! write(1,*)'# p_initial=',p_initial
-            write(1,*)'# T=',T
-            write(1,*)'# theta=',theta/rad
-            write(1,*)'# phi=',phi/rad
-            write(1,*)'# Gamma_0 (rkk) =',Gamma_0
-            write(1,*)'# t_inc=',t_inc,'# h_step=',h_step
-            write(1,*)'# v sweep=',h_step/t_inc
+            write(1,'("# Source code: Kinetic_MC_main.f90")')
+            write(1,'("#")')
+            write(1,'("# Spin Hamiltonian parameters")')
+            write(1,'("# D = " (e12.4) x "[K]")') D
+            write(1,'("# E = " (e12.4) x "[K]")') E
+            write(1,'("# B = " (e12.4) x "[K]")') B
+            write(1,'("# B42 = " (e12.4) x "[K]")') B42
+            write(1,'("# C = " (e12.4) x "[K]")') C
+            write(1,'("# B43 = " (e12.4) x "[K]")') B43
+            write(1,'("# B66 = " (e12.4) x "[K]")') B66
+            write(1,'("#")')
+            write(1,'("# number_of_spins = " (I4) )')number_of_spins
+            write(1,'("#")')
+            write(1,'("# T = " (F8.4) x "[K]")') T
+            write(1,'("# theta = " (F8.4) x "[deg]")') theta/rad
+            write(1,'("# phi = " (F8.4) x "[deg]")') phi/rad
+            write(1,'("# gamma_0 = " (e12.4) x "[1/(K^5 s)]")') gamma_0
+            write(1,'("# gamma_tunnel = " (e12.4) x "[1/(K^5 s)]")') gamma_tunnel
+            write(1,'("# N_time_slot = " (I6) x "[pure number]")') N_time_slot
+            write(1,'("# time_max = " (e12.4) x "[s]")') time_max
+            write(1,'("# t_inc = " (e12.4) x "[s]")') t_inc
+            write(1,'("# h_i = " (F8.4) x "[T]")') 1d-4*h_i
+            write(1,'("# h_f = " (F8.4) x "[T]")') 1d-4*h_f
+            write(1,'("# h_step = " (F8.4) x "[T]")') 1d-4*h_step
+            write(1,'("# v_sweep = " (e12.4) x "[T/s]")') (1d-4)*h_step/t_inc
+            write(1,'("#")')
+            write(1,'("# iter_max =" I6)') iter_max
+            write(1,'("# iter =" I6)') iter
+            write(1,'("# iwrite = " I6 )') iwrite
             !--------------------------------------------
 
         endif ! write ending
