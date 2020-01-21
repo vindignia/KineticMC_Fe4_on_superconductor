@@ -9,7 +9,7 @@ The present project can be compiled through the Makefile, with the command line
 To execute the program type
 > ./Fe4
 
-It is compatible with the GNU Fortran (GCC) 8.1.0 (or later versions) and uses the lapack libraries. 
+The project is compatible with the GNU Fortran (GCC) 8.1.0 (or later versions) and uses the lapack libraries. 
 
 The names of output files can be defined in the "FileNamesModule.f90". 
 Computation parameters can be set in the module "ParametersModule.f90". 
