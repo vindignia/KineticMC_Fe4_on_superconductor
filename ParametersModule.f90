@@ -21,29 +21,29 @@ module ComputationParameters
     INTEGER (Kind=4),parameter      :: matrix_size = 11		    ! 2*S+1 we define this instead of the spin S
     REAL (Kind=8)                   :: S
     ! --------------------------------------------------------
-    INTEGER (Kind=4),parameter      :: iter_max = 200
-    INTEGER (Kind=4) 	            :: iwrite = 20
-    INTEGER (Kind=4),parameter	    :: N_time_slot = 400
-    REAL (Kind=8),parameter		    :: time_max = 0.3*dble(N_time_slot)
+    INTEGER (Kind=4),parameter      :: iter_max = 200           ! Number of MC sweeps, iterations
+    INTEGER (Kind=4) 	            :: iwrite = 20              ! partial averages are written in the output file every "iwrite" iterations
+    INTEGER (Kind=4),parameter	    :: N_time_slot = 400        ! number of slots in which the elapsed time is discretized
+    REAL (Kind=8),parameter		    :: time_max = 0.3*dble(N_time_slot)     ! time elapsed during the simulation in seconds
     REAL (Kind=8)	 			    :: h_step
-    REAL (Kind=8),parameter	        :: h_i = -0.6d4			    ! Gauss
-    REAL (Kind=8),parameter		    :: h_f = 0.6d4			    ! Gauss
+    REAL (Kind=8),parameter	        :: h_i = -0.6d4			    ! initial field [Gauss]
+    REAL (Kind=8),parameter		    :: h_f = 0.6d4			    ! final field [Gauss]
     INTEGER (Kind=4),parameter      :: seed = 980759715 		! random numbers seed
     INTEGER (Kind=4),parameter      :: p_initial = 1			! Initial state for each spin
     REAL (Kind=8),parameter         :: T = 4.d-1
     REAL (Kind=8),parameter         :: pi = 3.141592653589793238462643d0
-    REAL (Kind=8),parameter         :: mu_B = (9.274078d-5)/1.380662d0  		! Kelvin/Gauss
+    REAL (Kind=8),parameter         :: mu_B = (9.274078d-5)/1.380662d0  	! Bohr magneton [Kelvin/Gauss]
     REAL (Kind=8),parameter         :: eps = 1.d-13
     REAL (Kind=8),parameter         :: rad = pi/180.d0
     REAL (Kind=8)			 	    :: theta_0 = 22.d0			! tilting easy axis w.r.t. normal to the plane in deg
     REAL (Kind=8)	                :: phi_0 = 90.d0
     REAL (Kind=8)                   :: h_crit_Pb = 7.d2         ! critical field of the superconductor
     ! ----------------- logical parameters --------------------
-    logical                     :: save_eig_and_W=.false.
-    logical 					:: random_phi=.false.
-    logical 					:: heat_bath=.false.
-    logical 					:: read_fields=.false.
-    logical 					:: average_critical_field =.false.
+    logical                         :: save_eig_and_W=.false.
+    logical 					    :: random_phi=.false.
+    logical 					    :: heat_bath=.false.
+    logical 					    :: read_fields=.false.
+    logical 					    :: average_critical_field =.false.
 contains
 
     ! --------------------------------------------------------

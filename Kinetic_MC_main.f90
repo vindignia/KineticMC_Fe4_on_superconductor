@@ -1,4 +1,4 @@
-! ordering of include is important aslo within
+! © 2020 ETH Zurich, [PD Dr. Alessandro Vindigni]
 include 'SpinAlgebraModule.f90'
 include 'TransitionProbModule.f90'
 include 'FileNamesModule.f90'
@@ -7,7 +7,6 @@ include 'RandomModule.f90'
 include 'ParametersModule.f90'
 include 'VariablesMainModule.f90'
 
-! I am changing al the types into REAL (Kind=8) consistently in every subrouitne and commons
 program Kinetic_MC_Fe4
 
     USE SpinAlgebra
@@ -110,7 +109,7 @@ program Kinetic_MC_Fe4
                 H_y = dsin(theta)*dsin(phi)*field_values(itime)
                 H_z = dcos(theta)*field_values(itime)	! ACHTUNG field_values(itime)
 
-                ! transition probabilities Gatteschi-Sessoli-Villain
+                ! transition probabilities taken from the book "Molecular Nanomagnets" Gatteschi-Sessoli-Villain
                 call transition_rates(matrix_size,T,H_x,H_y,H_z,W_single,En_levels,S_proj)
 
                 do q=1,matrix_size
@@ -204,14 +203,11 @@ contains
         REAL (Kind=8)		:: t_i,tt,Delta_t_min,W_max
 
         ! Implementation of the First-Reaction-Algorithm with discretized, "squarelike" transition rates.
-        ! write(*,*)'in routine Advance time squares'
 
         p = conf(ii)
         W_max = 0.d0
         do q=1,matrix_size
 
-            !R  rr = 0
-            !R  call RANDOM_NUMBER(rr)
             rr = random()
             log_rr(q)=-dlog(rr)
 
@@ -329,8 +325,7 @@ contains
 
             enddo
 
-            !  exiting at this point does not seem to have an influence
-            if(iadvance==0)Delta_t = time_max + 1.	!no event has happened
+            if(iadvance==0)Delta_t = time_max + 1.	! no event has happened
 
             if(Delta_t<1.d-13)write(*,*)time,'achtung Delta_t=0!',Delta_t,'iadvance=',iadvance
             ! Advance time and define probability
@@ -340,11 +335,11 @@ contains
             time = time + Delta_t
 
             tmp_h = h_i + time*h_step/t_inc
-            itime=int(time/t_inc)  + 1   			! N.B. Delta_t is allowed to be larger than t_inc with this trick
+            itime=int(time/t_inc)  + 1   			                ! N.B. Delta_t is allowed to be larger than t_inc
 
             if(itime == itime_old) then
                 icount = icount + 1
-                NN(itime) = NN(itime) + Delta_t 			! it has to be outside the loop on the lattice
+                NN(itime) = NN(itime) + Delta_t 			        ! it has to be outside the loop on the lattice
 
                 do ir=1,number_of_spins
                     p = conf(ir)	! 1 + (sigma(ir) + 1)/2			! vector of the states in which the each spin is found
@@ -399,7 +394,7 @@ contains
             !	END UPDATE CONFIGURATION
             !-------------------------------------------
 
-            if (itime > N_time_slot)exit	! do while =>  this happens also when Delta_t = 0, the following one not
+            if (itime > N_time_slot)exit	! do while => this happens also when Delta_t = 0, the following one not
 
         enddo   ! do while
 
@@ -473,7 +468,6 @@ contains
                 H_z = h_ext_z
 
                 call transition_rates(matrix_size,T,H_x,H_y,H_z,W_single,En_levels,S_proj)
-                !                        call transition_rates_H(matrix_size,T,H_x,H_y,H_z,W_single,En_levels,S_proj)
 
                 if(Norm(itime)>1.d-14)then
                     icount=icount+1
@@ -555,7 +549,6 @@ contains
             write(1,'("# iter =" I6)') iter
             write(1,'("# iwrite = " I6 )') iwrite
             !--------------------------------------------
-
 
         endif ! write ending
 
