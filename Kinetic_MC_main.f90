@@ -1,11 +1,11 @@
 ! ordering of include is important aslo within
-include 'SpinAlgebra.f90'
+include 'SpinAlgebraModule.f90'
 include 'TransitionProbModule.f90'
 include 'FileNamesModule.f90'
 include 'TestModule.f90'
 include 'RandomModule.f90'
-include 'Parameters.f90'
-include 'VariablesMain.f90'
+include 'ParametersModule.f90'
+include 'VariablesMainModule.f90'
 
 ! I am changing al the types into REAL (Kind=8) consistently in every subrouitne and commons
 program Kinetic_MC_Fe4
@@ -32,9 +32,9 @@ program Kinetic_MC_Fe4
     h_step=dabs(h_f-h_i)/dble(N_time_slot)		! with h=0 in the range
 
     if(.NOT.read_fields) then
-        print '("t_inc = " (F8.4) x "[s]")', t_inc
+        print '("t_inc = " (e12.4) x "[s]")', t_inc
         print '("h_step = " (F8.4) x "[T]")', (1d-4)*h_step
-        print '("v_sweep = " (F8.4) x "[T/s]")', (1d-4)*h_step/t_inc
+        print '("v_sweep = " (e12.4) x "[T/s]")', (1d-4)*h_step/t_inc
     endif
 
     i=1
@@ -75,7 +75,7 @@ program Kinetic_MC_Fe4
         ih = (tmp_h-h_i)/h_step
         ih = ih + 1
 
-        print '(" time max = " (F8.4) x "[s]"/)', time_max
+        print '(" time max = " (F12.4) x "[s]"/)', time_max
 
         ! write the eigenvalues and transition rates in a separate files
         if (save_eig_and_W) then
@@ -525,28 +525,37 @@ contains
         else
 
             !----------- output ending ------------------
-            write(1,*)'# Source code: Kinetic_MC_Fe4.f90'
-            write(1,*)'# computation parameters'
-            write(1,*)'#'
-            write(1,*)'# Spin Hamiltonian parameters'
-            write(1,*)'# D,E,B,B42,C,B43,B66'
-            write(1,*)'#',D,E,B,B42,C,B43,B66
-            write(1,*)'#'
-            write(1,*)'# number_of_spins=',number_of_spins
-            write(1,*)'# iter_max=',iter_max,' iter=',iter
-            write(1,*)'# iwrite=',iwrite
-            write(1,*)'# N_time_slot=',N_time_slot
-            write(1,*)'# time_max=',time_max
-            write(1,*)'# h_i=',h_i
-            write(1,*)'# h_f=',h_f
-            ! write(1,*)'# p_initial=',p_initial
-            write(1,*)'# T=',T
-            write(1,*)'# theta=',theta/rad
-            write(1,*)'# phi=',phi/rad
-            write(1,*)'# Gamma_0 (rkk) =',Gamma_0
-            write(1,*)'# t_inc=',t_inc,'# h_step=',h_step
-            write(1,*)'# v sweep=',h_step/t_inc
+            write(1,'("# Source code: Kinetic_MC_main.f90")')
+            write(1,'("#")')
+            write(1,'("# Spin Hamiltonian parameters")')
+            write(1,'("# D = " (e12.4) x "[K]")') D
+            write(1,'("# E = " (e12.4) x "[K]")') E
+            write(1,'("# B = " (e12.4) x "[K]")') B
+            write(1,'("# B42 = " (e12.4) x "[K]")') B42
+            write(1,'("# C = " (e12.4) x "[K]")') C
+            write(1,'("# B43 = " (e12.4) x "[K]")') B43
+            write(1,'("# B66 = " (e12.4) x "[K]")') B66
+            write(1,'("#")')
+            write(1,'("# number_of_spins = " (I4) )')number_of_spins
+            write(1,'("#")')
+            write(1,'("# T = " (F8.4) x "[K]")') T
+            write(1,'("# theta = " (F8.4) x "[deg]")') theta/rad
+            write(1,'("# phi = " (F8.4) x "[deg]")') phi/rad
+            write(1,'("# gamma_0 = " (e12.4) x "[1/(K^5 s)]")') gamma_0
+            write(1,'("# gamma_tunnel = " (e12.4) x "[1/(K^5 s)]")') gamma_tunnel
+            write(1,'("# N_time_slot = " (I6) x "[pure number]")') N_time_slot
+            write(1,'("# time_max = " (e12.4) x "[s]")') time_max
+            write(1,'("# t_inc = " (e12.4) x "[s]")') t_inc
+            write(1,'("# h_i = " (F8.4) x "[T]")') 1d-4*h_i
+            write(1,'("# h_f = " (F8.4) x "[T]")') 1d-4*h_f
+            write(1,'("# h_step = " (F8.4) x "[T]")') 1d-4*h_step
+            write(1,'("# v_sweep = " (e12.4) x "[T/s]")') (1d-4)*h_step/t_inc
+            write(1,'("#")')
+            write(1,'("# iter_max =" I6)') iter_max
+            write(1,'("# iter =" I6)') iter
+            write(1,'("# iwrite = " I6 )') iwrite
             !--------------------------------------------
+
 
         endif ! write ending
 

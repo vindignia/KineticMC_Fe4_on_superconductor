@@ -66,9 +66,9 @@ Contains
 
     !---------------------------------------------------------
 
-    pure function transition_rate(T, gamma_tunnel, gg0, gg1, gg2, Nd, eigenVal, eigenVect, p, q) ! <p| ... |q>
+    pure function transition_rate(T, gamma_tunnel, gamma_0, gg1, gg2, Nd, eigenVal, eigenVect, p, q) ! <p| ... |q>
         implicit none
-        REAL (Kind = 8), intent(in) :: T, gamma_tunnel, gg0, gg1, gg2
+        REAL (Kind = 8), intent(in) :: T, gamma_tunnel, gamma_0, gg1, gg2
         INTEGER (Kind = 4), intent(in) :: Nd, p, q
         COMPLEX (Kind = 8), intent(in) :: eigenVect(Nd, Nd)
         REAL (Kind = 8), intent(in) :: eigenVal(Nd)
@@ -87,7 +87,7 @@ Contains
         S_minus_S_z_sq = S_minus_S_z(Nd, eigenVect, p, q)**2.
 
         spin_phonon = gg2*gg2*(S_plus_sq_sq + S_minus_sq_sq) + gg1*gg1*(S_plus_S_z_sq + S_minus_S_z_sq)
-        spin_phonon = gg0 * spin_phonon
+        spin_phonon = gamma_0 * spin_phonon
 
         deltaE = eigenVal(p) - eigenVal(q)
         thermal_weight = (deltaE**3.) / (dexp(deltaE / T) - 1.d0)

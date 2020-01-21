@@ -22,11 +22,6 @@ module GlobalVariables
     INTEGER (Kind=4),dimension(1:number_of_spins)		:: conf
     INTEGER (Kind=4)            :: idum,mmm
     REAL (Kind=8) 				:: H_x,H_y,H_z
-    logical                     :: save_eig_and_W=.false.
-    logical 					:: random_phi=.false.
-    logical 					:: heat_bath=.false.
-    logical 					:: read_fields=.false.
-    logical 					:: average_critical_field =.false.
     REAL (Kind=8)				:: start, finish
     REAL (Kind=8)				:: time_exp,field_exp,mag_exp
 
