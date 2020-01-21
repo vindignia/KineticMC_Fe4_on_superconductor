@@ -1,5 +1,5 @@
-# KineticMC_Fe4_on_superconductor
-##  © 2020 ETH Zurich, [PD Dr. Alessandro Vindigni]
+# Kinetic MonteCarlo for Fe4 molecules on a superconductor
+### © 2020 ETH Zurich, [PD Dr. Alessandro Vindigni]
 This project computes hysteresis curves for Fe4 molecules deposited on a superconducting substrate. 
 For details, please refer to the manuscript "Quantum dynamics of a single molecule magnet on superconducting Pb(111)", G. Serrano et al., Nat. Mater. (2020).
  
