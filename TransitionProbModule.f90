@@ -3,7 +3,7 @@ Module TransitionProbabilities
 
 Contains
 
-    SUBROUTINE transition_rates(Nd, TIN, H_x, H_y, H_z, W_Ale, eig, S_proj_out)
+    SUBROUTINE transition_rates(Nd, TIN, H_x, H_y, H_z, W, eig, S_proj_out)
         implicit none
 
         INTEGER (Kind = 4) :: Nd, I, p, q, mm, jm(Nd)
@@ -14,7 +14,7 @@ Contains
 
         REAL (Kind = 8) :: proj_max(Nd), eigenvalue(Nd), tmp, H
         REAL (Kind = 8) :: T, TIN, H_x, H_y, H_z
-        REAL (Kind = 8) :: Energy_Ale(Nd), W_Ale(Nd, Nd)
+        REAL (Kind = 8) :: Energy_Ale(Nd), W(Nd, Nd)
         REAL (Kind = 8) :: S_plus_coeff, S_minus_coeff
         REAL (Kind = 8) :: En_levels(Nd)
         COMPLEX (Kind = 8) :: component_plus, component_minus, test_norm
@@ -51,7 +51,7 @@ Contains
 
         do q = 1,Nd
             do p = 1, Nd
-                W_Ale(q, p) = transition_rate(T, gamma_tunnel, gamma_0, g1, g2, Nd, eig, HamMat, p, q)
+                W(q, p) = transition_rate(T, gamma_tunnel, gamma_0, g1, g2, Nd, eig, HamMat, p, q)
             end do
          ! spin components
             S_proj_out(1,q) = (0.5d0,0.d0)*(S_plus(Nd, HamMat, q, q) + S_minus(Nd, HamMat, q, q))
