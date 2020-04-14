@@ -35,8 +35,8 @@ module ComputationParameters
     REAL (Kind=8),parameter         :: mu_B = (9.274078d-5)/1.380662d0  	! Bohr magneton [Kelvin/Gauss]
     REAL (Kind=8),parameter         :: eps = 1.d-13
     REAL (Kind=8),parameter         :: rad = pi/180.d0
-    REAL (Kind=8)			 	    :: theta_0 = 22.d0			! tilting easy axis w.r.t. normal to the plane in deg
-    REAL (Kind=8)	                :: phi_0 = 90.d0
+    REAL (Kind=8)			 	    :: theta_0 = 0.d0			! tilting easy axis w.r.t. normal to the plane in deg
+    REAL (Kind=8)	                :: phi_0 = 0.d0
     REAL (Kind=8)                   :: h_crit_Pb = 7.d2         ! critical field of the superconductor
     ! ----------------- logical parameters --------------------
     logical                         :: save_eig_and_W=.false.

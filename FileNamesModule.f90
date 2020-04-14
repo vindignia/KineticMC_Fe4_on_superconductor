@@ -1,7 +1,7 @@
 module FileNames
     implicit none
     character(len=40),parameter   :: directory='output_directory/'
-    character(len=40),parameter   :: label='label.dat'
+    character(len=40),parameter   :: label='003.dat'
     character(len=40),parameter   :: directory_field_values='field_data/'	! used to read nominal/true fields from file
     character(len=80)   :: filename_fields=trim(adjustl(directory_field_values))//'fields_prova.dat' ! short '...input_2.dat'
     character(len=80)   :: filename_1=trim(adjustl(directory))//'magnetization_curves/Fe4_'//trim(adjustl(label))

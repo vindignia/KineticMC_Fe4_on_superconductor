@@ -1,4 +1,4 @@
-# ignore git service file 
+# ignore git service file
 .DS_Store
 .idea/
 output_directory/

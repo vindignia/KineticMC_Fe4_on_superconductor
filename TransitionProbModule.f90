@@ -92,15 +92,15 @@ Contains
         deltaE = eigenVal(p) - eigenVal(q)
         thermal_weight = (deltaE**3.) / (dexp(deltaE / T) - 1.d0)
 
-        if (abs(deltaE).lt.1.d-1) then ! neighborhood of level crossing
-            transition_rate = spin_phonon * (deltaE**2) * T
-            !     -----    INTRODUCE PURE TUNNELING CHANNEL  ----
-             if (abs(p - q).ge.9) transition_rate = transition_rate + gamma_tunnel
-        else
-            if (abs(deltaE) / T.lt.40.d0) then
+!        if (abs(deltaE).lt.1.d-1) then ! neighborhood of level crossing
+!            transition_rate = spin_phonon * (deltaE**2) * T
+!            !     -----    INTRODUCE PURE TUNNELING CHANNEL  ----
+!            ! if (abs(p - q).ge.9) transition_rate = transition_rate + gamma_tunnel
+!        else
+            if ((abs(deltaE) / T) .lt. 40.d0) then
                 thermal_weight = (deltaE**3.) / (dexp(deltaE / T) - 1.d0)
             else
-                if (deltaE.gt.0.) then
+                if (deltaE .gt. 0.) then
                     ! limit T -> 0 for absorption transitions
                     thermal_weight = 0.d0
                 else
@@ -111,7 +111,12 @@ Contains
 
             transition_rate = spin_phonon * thermal_weight
 
-        endif
+!        endif
+
+        !     -----    INTRODUCE PURE TUNNELING CHANNEL  ----
+        if (abs(deltaE).lt.1.d-1 .and. abs(p - q).ge.9) then ! neighborhood of level crossing
+            transition_rate = transition_rate + gamma_tunnel
+        end if
 
     end function transition_rate
 
