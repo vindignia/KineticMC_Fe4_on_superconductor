@@ -53,7 +53,7 @@ Contains
             do p = 1, Nd
                 W(q, p) = transition_rate(T, gamma_tunnel, gamma_0, g1, g2, Nd, eig, HamMat, p, q)
             end do
-         ! spin components
+            ! spin components
             S_proj_out(1,q) = (0.5d0,0.d0)*(S_plus(Nd, HamMat, q, q) + S_minus(Nd, HamMat, q, q))
             S_proj_out(2,q) = (0.d0,-0.5d0)*(S_plus(Nd, HamMat, q, q) - S_minus(Nd, HamMat, q, q))
             S_proj_out(3,q) = S_z(Nd, HamMat, q, q)
@@ -92,26 +92,19 @@ Contains
         deltaE = eigenVal(p) - eigenVal(q)
         thermal_weight = (deltaE**3.) / (dexp(deltaE / T) - 1.d0)
 
-!        if (abs(deltaE).lt.1.d-1) then ! neighborhood of level crossing
-!            transition_rate = spin_phonon * (deltaE**2) * T
-!            !     -----    INTRODUCE PURE TUNNELING CHANNEL  ----
-!            ! if (abs(p - q).ge.9) transition_rate = transition_rate + gamma_tunnel
-!        else
-            if ((abs(deltaE) / T) .lt. 40.d0) then
-                thermal_weight = (deltaE**3.) / (dexp(deltaE / T) - 1.d0)
+        if ((abs(deltaE) / T) .lt. 40.d0) then
+            thermal_weight = (deltaE**3.) / (dexp(deltaE / T) - 1.d0)
+        else
+            if (deltaE .gt. 0.) then
+                ! limit T -> 0 for absorption transitions
+                thermal_weight = 0.d0
             else
-                if (deltaE .gt. 0.) then
-                    ! limit T -> 0 for absorption transitions
-                    thermal_weight = 0.d0
-                else
-                    ! limit T -> 0 for emission transitions
-                    thermal_weight = -deltaE**3.
-                endif
+                ! limit T -> 0 for emission transitions
+                thermal_weight = -deltaE**3.
             endif
+        endif
 
-            transition_rate = spin_phonon * thermal_weight
-
-!        endif
+        transition_rate = spin_phonon * thermal_weight
 
         !     -----    INTRODUCE PURE TUNNELING CHANNEL  ----
         if (abs(deltaE).lt.1.d-1 .and. abs(p - q).ge.9) then ! neighborhood of level crossing
@@ -252,7 +245,7 @@ Contains
                 if(IDF.eq.2) then
                     MAT(I, J) = E * 0.5 * DSQRT((S - Z(J)) * (S + Z(J) + 1.) * (S - Z(J) - 1.) * (S + Z(J) + 2.))
                     MAT(I, J) = MAT(I, J) + 0.25 * B42 * DSQRT(S * (S + 1) - z(J) * (z(j) + 1.)) * &
-                    DSQRT(S * (S + 1.) - (z(J) + 1.) * (Z(J) + 2.)) * &
+                            DSQRT(S * (S + 1.) - (z(J) + 1.) * (Z(J) + 2.)) * &
                             (7. * z(j) * z(J) + 14. * z(J) - S * (S + 1.) + 9.) * 2
                 endif
                 if (IDF.eq.3) then
