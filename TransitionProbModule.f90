@@ -3,7 +3,7 @@ Module TransitionProbabilities
 
 Contains
 
-    SUBROUTINE transition_rates(Nd, TIN, H_x, H_y, H_z, W_Ale, eig, S_proj_out)
+    SUBROUTINE transition_rates(Nd, TIN, H_x, H_y, H_z, W, eig, S_proj_out)
         implicit none
 
         INTEGER (Kind = 4) :: Nd, I, p, q, mm, jm(Nd)
@@ -14,7 +14,7 @@ Contains
 
         REAL (Kind = 8) :: proj_max(Nd), eigenvalue(Nd), tmp, H
         REAL (Kind = 8) :: T, TIN, H_x, H_y, H_z
-        REAL (Kind = 8) :: Energy_Ale(Nd), W_Ale(Nd, Nd)
+        REAL (Kind = 8) :: Energy_Ale(Nd), W(Nd, Nd)
         REAL (Kind = 8) :: S_plus_coeff, S_minus_coeff
         REAL (Kind = 8) :: En_levels(Nd)
         COMPLEX (Kind = 8) :: component_plus, component_minus, test_norm
@@ -51,9 +51,9 @@ Contains
 
         do q = 1,Nd
             do p = 1, Nd
-                W_Ale(q, p) = transition_rate(T, gamma_tunnel, gamma_0, g1, g2, Nd, eig, HamMat, p, q)
+                W(q, p) = transition_rate(T, gamma_tunnel, gamma_0, g1, g2, Nd, eig, HamMat, p, q)
             end do
-         ! spin components
+            ! spin components
             S_proj_out(1,q) = (0.5d0,0.d0)*(S_plus(Nd, HamMat, q, q) + S_minus(Nd, HamMat, q, q))
             S_proj_out(2,q) = (0.d0,-0.5d0)*(S_plus(Nd, HamMat, q, q) - S_minus(Nd, HamMat, q, q))
             S_proj_out(3,q) = S_z(Nd, HamMat, q, q)
@@ -92,26 +92,24 @@ Contains
         deltaE = eigenVal(p) - eigenVal(q)
         thermal_weight = (deltaE**3.) / (dexp(deltaE / T) - 1.d0)
 
-        if (abs(deltaE).lt.1.d-1) then ! neighborhood of level crossing
-            transition_rate = spin_phonon * (deltaE**2) * T
-            !     -----    INTRODUCE PURE TUNNELING CHANNEL  ----
-             if (abs(p - q).ge.9) transition_rate = transition_rate + gamma_tunnel
+        if ((abs(deltaE) / T) .lt. 40.d0) then
+            thermal_weight = (deltaE**3.) / (dexp(deltaE / T) - 1.d0)
         else
-            if (abs(deltaE) / T.lt.40.d0) then
-                thermal_weight = (deltaE**3.) / (dexp(deltaE / T) - 1.d0)
+            if (deltaE .gt. 0.) then
+                ! limit T -> 0 for absorption transitions
+                thermal_weight = 0.d0
             else
-                if (deltaE.gt.0.) then
-                    ! limit T -> 0 for absorption transitions
-                    thermal_weight = 0.d0
-                else
-                    ! limit T -> 0 for emission transitions
-                    thermal_weight = -deltaE**3.
-                endif
+                ! limit T -> 0 for emission transitions
+                thermal_weight = -deltaE**3.
             endif
-
-            transition_rate = spin_phonon * thermal_weight
-
         endif
+
+        transition_rate = spin_phonon * thermal_weight
+
+        !     -----    INTRODUCE PURE TUNNELING CHANNEL  ----
+        if (abs(deltaE).lt.1.d-1 .and. abs(p - q).ge.9) then ! neighborhood of level crossing
+            transition_rate = transition_rate + gamma_tunnel
+        end if
 
     end function transition_rate
 
@@ -247,7 +245,7 @@ Contains
                 if(IDF.eq.2) then
                     MAT(I, J) = E * 0.5 * DSQRT((S - Z(J)) * (S + Z(J) + 1.) * (S - Z(J) - 1.) * (S + Z(J) + 2.))
                     MAT(I, J) = MAT(I, J) + 0.25 * B42 * DSQRT(S * (S + 1) - z(J) * (z(j) + 1.)) * &
-                    DSQRT(S * (S + 1.) - (z(J) + 1.) * (Z(J) + 2.)) * &
+                            DSQRT(S * (S + 1.) - (z(J) + 1.) * (Z(J) + 2.)) * &
                             (7. * z(j) * z(J) + 14. * z(J) - S * (S + 1.) + 9.) * 2
                 endif
                 if (IDF.eq.3) then
